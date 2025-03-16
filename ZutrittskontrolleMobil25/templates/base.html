@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Zutrittskontrolle Mobil 25{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <header class="p-3 text-bg-dark">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start" data-bs-theme="dark">
+                <a class="navbar-brand" href="{% url 'dashboard' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="Logo" height="32" class="d-inline-block align-text-top">
+
+                </a>
+    
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="#" class="nav-link px-2 text-white">Zutrittskontrolle Mobil 25</a></li>
+                </ul>
+    
+                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+                    <input id="globalSearch" type="search" class="form-control form-control-dark text-bg-dark" placeholder="Suche..." aria-label="Search">
+                </form>
+    
+                <div class="text-end">
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addAdaModal">Neue AdA</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Infobox für Check-in/Check-out Nachrichten -->
+    <div id="statusAlert" class="alert d-none position-fixed top-50 start-50 translate-middle text-center fw-bold p-4" 
+        style="z-index: 1050; width: 400px; font-size: 1.5rem; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);">
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+
+
+    <!-- Modal für neuen AdA -->
+    <div class="modal fade" id="addAdaModal" tabindex="-1" aria-labelledby="addAdaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAdaModalLabel">Neuen AdA hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Bootstrap Alert für Erfolgs-/Fehlermeldungen -->
+                    <div id="modalAlert" class="alert d-none" role="alert"></div>
+
+                    <form id="addAdaForm">
+                        <div class="mb-3">
+                            <label for="adaRank" class="form-label">Grad</label>
+                            <select class="form-select" id="adaRank" required>
+                                <option value="">Bitte wählen...</option>
+                                <option value="Sdt">Soldat (Sdt)</option>
+                                <option value="Gfr">Gefreiter (Gfr)</option>
+                                <option value="Obgfr">Obergefreiter (Obgfr)</option>
+                                <option value="Kpl">Korporal (Kpl)</option>
+                                <option value="Wm">Wachtmeister (Wm)</option>
+                                <option value="Obwm">Oberwachtmeister (Obwm)</option>
+                                <option value="Fw">Feldweibel (Fw)</option>
+                                <option value="Four">Fourier (Four)</option>
+                                <option value="Hptfw">Hauptfeldweibel (Hptfw)</option>
+                                <option value="Adj Uof">Adjutant Unteroffizier (Adj Uof)</option>
+                                <option value="Stabsadj">Stabsadjutant (Stabsadj)</option>
+                                <option value="Hptadj">Hauptadjutant (Hptadj)</option>
+                                <option value="Chefadj">Chefadjutant (Chefadj)</option>
+                                <option value="Lt">Leutnant (Lt)</option>
+                                <option value="Oblt">Oberleutnant (Oblt)</option>
+                                <option value="Hptm">Hauptmann (Hptm)</option>
+                                <option value="Maj">Major (Maj)</option>
+                                <option value="Oberstlt">Oberstleutnant (Oberstlt)</option>
+                                <option value="Oberst">Oberst</option>
+                                <option value="Fach Of">Fachoffizier (Fach Of)</option>
+                                <option value="Br">Brigadier (Br)</option>
+                                <option value="Div">Divisionär (Div)</option>
+                                <option value="KKdt">Korpskommandant (KKdt)</option>
+                                <option value="Gen">General</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adaLastName" class="form-label">Nachname</label>
+                            <input type="text" class="form-control" id="adaLastName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="adaFirstName" class="form-label">Vorname</label>
+                            <input type="text" class="form-control" id="adaFirstName" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal zum Bearbeiten eines AdA -->
+    <div class="modal fade" id="editAdaModal" tabindex="-1" aria-labelledby="editAdaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editAdaModalLabel">AdA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Bootstrap Alert für Meldungen -->
+                    <div id="editModalAlert" class="alert d-none" role="alert"></div>
+
+                    <form id="editAdaForm">
+                        <input type="hidden" id="editAdaId">
+                        
+                        <div class="mb-3">
+                            <label for="editAdaRank" class="form-label">Grad</label>
+                            <select class="form-select" id="editAdaRank" disabled>
+                                <option value="Sdt">Soldat (Sdt)</option>
+                                <option value="Gfr">Gefreiter (Gfr)</option>
+                                <option value="Obgfr">Obergefreiter (Obgfr)</option>
+                                <option value="Kpl">Korporal (Kpl)</option>
+                                <option value="Wm">Wachtmeister (Wm)</option>
+                                <option value="Obwm">Oberwachtmeister (Obwm)</option>
+                                <option value="Fw">Feldweibel (Fw)</option>
+                                <option value="Four">Fourier (Four)</option>
+                                <option value="Hptfw">Hauptfeldweibel (Hptfw)</option>
+                                <option value="Adj Uof">Adjutant Unteroffizier (Adj Uof)</option>
+                                <option value="Stabsadj">Stabsadjutant (Stabsadj)</option>
+                                <option value="Hptadj">Hauptadjutant (Hptadj)</option>
+                                <option value="Chefadj">Chefadjutant (Chefadj)</option>
+                                <option value="Lt">Leutnant (Lt)</option>
+                                <option value="Oblt">Oberleutnant (Oblt)</option>
+                                <option value="Hptm">Hauptmann (Hptm)</option>
+                                <option value="Maj">Major (Maj)</option>
+                                <option value="Oberstlt">Oberstleutnant (Oberstlt)</option>
+                                <option value="Oberst">Oberst</option>
+                                <option value="Fach Of">Fachoffizier (Fach Of)</option>
+                                <option value="Br">Brigadier (Br)</option>
+                                <option value="Div">Divisionär (Div)</option>
+                                <option value="KKdt">Korpskommandant (KKdt)</option>
+                                <option value="Gen">General</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editAdaLastName" class="form-label">Nachname</label>
+                            <input type="text" class="form-control" id="editAdaLastName" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editAdaFirstName" class="form-label">Vorname</label>
+                            <input type="text" class="form-control" id="editAdaFirstName" disabled>
+                        </div>
+                        
+                        <p><strong>Status:</strong> <span id="editAdaStatus"></span></p>
+                        
+                        <button type="button" id="checkoutButton" class="btn btn-primary">Check-out</button>
+                        <button type="button" id="deleteButton" class="btn btn-danger">Löschen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NFC-Karte registrieren Modal -->
+    <div class="modal fade" id="registerNfcModal" tabindex="-1" aria-labelledby="registerNfcModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerNfcModalLabel">NFC-Karte registrieren</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerNfcForm">
+                        <input type="hidden" id="registerNfcId">
+
+                        <div class="mb-3">
+                            <label for="registerAdaSelect" class="form-label">AdA auswählen</label>
+                            <select class="form-select" id="registerAdaSelect" required>
+                                <option value="">Bitte wählen...</option>
+                                <!-- AdAs werden dynamisch geladen -->
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">Registrieren</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("globalSearch").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();  // Verhindert das Neuladen der Seite
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#addAdaForm").submit(function (event) {
+                event.preventDefault();  // Verhindert das Neuladen der Seite
+
+                let newAda = {
+                    rank: $("#adaRank").val(),
+                    last_name: $("#adaLastName").val(),
+                    first_name: $("#adaFirstName").val()
+                };
+
+                $.ajax({
+                    url: "/api/add_ada/",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(newAda),
+                    success: function () {
+                        showModalAlert("success", "AdA erfolgreich hinzugefügt!");
+                        $("#addAdaForm")[0].reset();  // Eingaben zurücksetzen
+                        $('#usersTable').DataTable().ajax.reload();  // Tabelle aktualisieren
+                    },
+                    error: function (error) {
+                        let errorMessage = "Unbekannter Fehler";
+
+                        try {
+                            let errorData = JSON.parse(error.responseText);
+                            if (errorData.error) {
+                                errorMessage = errorData.error;  // Nur die tatsächliche Fehlermeldung anzeigen
+                            }
+                        } catch (e) {
+                            errorMessage = "Fehler beim Verarbeiten der Fehlermeldung.";
+                        }
+
+                        showModalAlert("danger", errorMessage);
+                    }
+                });
+            });
+
+            // Funktion zum Anzeigen der Alert-Meldung im Modal
+            function showModalAlert(type, message) {
+                let alertBox = $("#modalAlert");
+                alertBox.removeClass("d-none alert-success alert-danger").addClass(`alert-${type}`).text(message);
+            }
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            // Check-out Funktion
+            $("#checkoutButton").click(function () {
+                let adaId = $("#editAdaId").val();
+                $.ajax({
+                    url: `/api/checkout/${adaId}/`,
+                    type: "POST",
+                    success: function () {
+                        $("#editModalAlert").removeClass("d-none alert-danger").addClass("alert-success").text("Check-out erfolgreich!");
+                        $('#usersTable').DataTable().ajax.reload();
+                        $("#editAdaModal").modal("hide");
+                    },
+                    error: function () {
+                        $("#editModalAlert").removeClass("d-none alert-success").addClass("alert-danger").text("Fehler beim Check-out.");
+                    }
+                });
+            });
+
+            // Löschen Funktion
+            $("#deleteButton").click(function () {
+                let adaId = $("#editAdaId").val();
+                if (!confirm("Möchtest du diesen AdA wirklich löschen?")) return;
+
+                $.ajax({
+                    url: `/api/delete_ada/${adaId}/`,
+                    type: "DELETE",
+                    success: function () {
+                        $("#editModalAlert").removeClass("d-none alert-danger").addClass("alert-success").text("AdA erfolgreich gelöscht!");
+                        $('#usersTable').DataTable().ajax.reload();
+                        $("#editAdaModal").modal("hide");
+                    },
+                    error: function () {
+                        $("#editModalAlert").removeClass("d-none alert-success").addClass("alert-danger").text("Fehler beim Löschen.");
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+           document.addEventListener("DOMContentLoaded", function() {
+            let wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+            let socket = new WebSocket(wsProtocol + "://" + window.location.host + "/ws/checkin_checkout/");
+
+            socket.onmessage = function(event) {
+                let data = JSON.parse(event.data);
+
+                if (data.message_type) {
+                    // Falls eine NFC-Karte nicht registriert oder zugewiesen ist, NFC-ID mitgeben
+                    if (data.message_type === "warning" || data.message_type === "danger") {
+                        showStatusMessage(data.message_type, data.message, data.nfc_id);
+                    } else {
+                        showStatusMessage(data.message_type, data.message);
+                    }
+                } else {
+                    console.error("Kein message_type erhalten!", data);
+                }
+
+                // DataTable aktualisieren
+                if (window.usersTable) {
+                    window.usersTable.ajax.reload(null, false);
+                }
+            };
+
+            socket.onerror = function(event) {
+                console.error("WebSocket-Fehler:", event);
+            };
+        });
+
+        function showStatusMessage(type, message, nfc_id = null) {
+            let statusBox = $("#statusAlert");
+            statusBox.removeClass("d-none alert-success alert-danger alert-primary alert-warning");
+
+            // Falls NFC-ID vorhanden ist, mache die Meldung klickbar
+            if (nfc_id) {
+                statusBox
+                    .addClass("alert-warning") // Gelbe Farbe für Registrierung
+                    .html(`${message} <br><small><a href="#" class="btn btn-primary" id="registerNfcLink">Jetzt registrieren</a></small>`)
+                    .fadeIn();
+
+                // Event-Listener für den Klick auf "Jetzt registrieren"
+                $("#registerNfcLink").off("click").on("click", function (event) {
+                    event.preventDefault();
+                    showRegistrationModal(nfc_id);
+                });
+
+            } else {
+                if (type === "success") {
+                    statusBox.addClass("alert-success").text(message);
+                } else if (type === "info") {
+                    statusBox.addClass("alert-primary").text(message);
+                } else {
+                    statusBox.addClass("alert-danger").text(message);
+                }
+
+                statusBox.fadeIn();
+            }
+
+            setTimeout(function () {
+                statusBox.fadeOut();
+            }, 4000);
+        }
+
+        function showRegistrationModal(nfc_id) {
+            $("#registerNfcId").val(nfc_id);
+
+            // Benutzerliste abrufen
+            $.ajax({
+                url: "/api/get_ada_list/",
+                type: "GET",
+                success: function(response) {
+                    let adaSelect = $("#registerAdaSelect");
+                    adaSelect.empty();
+                    adaSelect.append('<option value="">Bitte wählen...</option>');
+
+                    response.adas.forEach(function(ada) {
+                        let optionText = `${ada.rank} ${ada.last_name}, ${ada.first_name}`;
+                        adaSelect.append(`<option value="${ada.id}">${optionText}</option>`);
+                    });
+                },
+                error: function() {
+                    alert("Fehler beim Laden der Benutzerliste.");
+                }
+            });
+
+            $("#registerNfcModal").modal("show");
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#registerNfcForm").submit(function (event) {
+                event.preventDefault();
+    
+                let nfc_id = $("#registerNfcId").val();
+                let ada_id = $("#registerAdaSelect").val();
+    
+                if (!ada_id) {
+                    alert("Bitte einen AdA auswählen!");
+                    return;
+                }
+    
+                $.ajax({
+                    url: "/api/register_nfc_card/",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ nfc_id: nfc_id, ada_id: ada_id }),
+                    success: function(response) {
+                        alert(response.message);
+                        $("#registerNfcModal").modal("hide");
+    
+                        // DataTable neu laden
+                        if (window.usersTable) {
+                            window.usersTable.ajax.reload(null, false);
+                        }
+                    },
+                    error: function(response) {
+                        let errorMessage = "Fehler bei der Registrierung.";
+                        if (response.responseJSON && response.responseJSON.error) {
+                            errorMessage = response.responseJSON.error;
+                        }
+                        alert(errorMessage);
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

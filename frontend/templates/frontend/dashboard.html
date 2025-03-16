@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col">
+                    <button id="filterAll" class="btn">Alle</button>
+                    <button id="filterCheckedIn" class="btn active btn-primary">Eingecheckt</button>
+                    <button id="filterCheckedOut" class="btn">Ausgecheckt</button>
+                </div>
+            </div>
+            <table id="usersTable" class="table">
+                <thead>
+                    <tr>
+                        <th>Grad</th>
+                        <th>Name</th>
+                        <th>Vorname</th>
+                        <th>Check-in/out Zeit</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        window.usersTable = $('#usersTable').DataTable({
+            "ajax": "{% url 'all_users' %}",  // API für alle Nutzer
+            "columns": [
+                { "data": "rank" },
+                { "data": "last_name" },
+                { "data": "first_name" },
+                { "data": "check_time" },  // Zeigt Check-in oder Check-out Zeit
+                { 
+                    "data": "status",
+                    "render": function (data, type, row) {
+                        return `<span class="badge ${data === 'Eingecheckt' ? 'bg-success' : 'bg-danger'}">
+                                    ${data}
+                                </span>`;
+                    }
+                }
+            ],
+            "order": [[1, "asc"]],  // Standardmäßig nach Nachnamen sortieren
+            "paging": false,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "dom": 'lrt',
+            "language": {
+                "lengthMenu": "Zeige _MENU_ Einträge",
+                "zeroRecords": "Keine passenden Einträge gefunden",
+                "info": "Zeige _START_ bis _END_ von _TOTAL_ Einträgen",
+                "infoEmpty": "Keine Einträge vorhanden",
+                "infoFiltered": "(gefiltert von _MAX_ Einträgen)",
+                "search": "Suchen:",
+                "paginate": {
+                    "first": "Erste",
+                    "last": "Letzte",
+                    "next": "Weiter",
+                    "previous": "Zurück"
+                }
+            },
+            "initComplete": function() {
+                // Standardmäßig "Eingecheckt" filtern
+                window.usersTable.column(4).search("Eingecheckt").draw();
+                $("#filterCheckedIn").addClass("active"); // Button visuell hervorheben
+            }
+        });
+
+                // Beim Klicken auf eine Zeile das Bearbeitungs-Modal öffnen
+                $('#usersTable tbody').on('click', 'tr', function () {
+            var rowData = window.usersTable.row(this).data();
+            if (rowData) {
+                openEditModal(rowData);
+            }
+        });
+
+        function openEditModal(data) {
+            $("#editAdaId").val(data.id);
+            $("#editAdaRank").val(data.rank);
+            $("#editAdaLastName").val(data.last_name);
+            $("#editAdaFirstName").val(data.first_name);
+            $("#editAdaStatus").text(data.status);
+
+            // Zeige oder verstecke die Check-out Schaltfläche je nach Status
+            if (data.status === "Eingecheckt") {
+                $("#checkoutButton").show();
+            } else {
+                $("#checkoutButton").hide();
+            }
+
+            $("#editAdaModal").modal("show");
+        }
+
+        // Globales Suchfeld mit DataTables verbinden
+        $('#globalSearch').on('keyup', function () {
+            window.usersTable.search(this.value).draw();
+        });
+
+        // Button-Filterlogik
+        $("#filterAll").click(function () {
+            window.usersTable.column(4).search("").draw();
+            updateButtonStyles(this);
+        });
+
+        $("#filterCheckedIn").click(function () {
+            window.usersTable.column(4).search("Eingecheckt").draw();
+            updateButtonStyles(this);
+        });
+
+        $("#filterCheckedOut").click(function () {
+            window.usersTable.column(4).search("Ausgecheckt").draw();
+            updateButtonStyles(this);
+        });
+
+        // Funktion zur Hervorhebung des aktiven Buttons
+        function updateButtonStyles(activeButton) {
+            $("#filterAll, #filterCheckedIn, #filterCheckedOut").removeClass("active btn-primary");
+            $(activeButton).addClass("active btn-primary");
+        }
+    });
+</script>
+{% endblock %}
