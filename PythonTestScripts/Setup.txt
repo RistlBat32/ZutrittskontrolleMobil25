@@ -1,0 +1,93 @@
+# -------- UPS Setup ---------
+# from https://www.waveshare.com/wiki/UPS_HAT_(E)
+
+
+sudo raspi-config 
+Select Interfacing Options -> I2C -> yes to enable i2C kernel driver
+
+sudo reboot
+
+sudo apt-get install p7zip
+wget "https://files.waveshare.com/wiki/UPS-HAT-(E)/UPS_HAT_E.7z"
+7zr x UPS_HAT_E.7z -r -o./
+cd UPS_HAT_E
+python3 ups.py
+
+# To Display battery voltage level (add the autostart?)
+cd ~/UPS_HAT_E
+DISPLAY=':0.0' python3 batteryTray.py
+
+# To Test something unclear
+cd ~/UPS_HAT_E
+./main.sh   #Do not add "sudo"
+sudo reboot
+
+# To be added to reboot script: 
+i2cset -y 1 0x2d 0x01 0x55
+
+# -------------- NFC HAT -------------
+# from https://www.waveshare.com/wiki/PN532_NFC_HAT
+
+
+# Installation
+sudo apt-get install p7zip-full
+wget https://files.waveshare.com/upload/6/66/Pn532-nfc-hat-code.7z
+7z x Pn532-nfc-hat-code.7z -r -o./Pn532-nfc-hat-code
+sudo chmod 777 -R Pn532-nfc-hat-code/
+
+sudo raspi-config 
+Select Interfacing Options -> SPI -> yes to enable SPI kernel driver
+
+# To Test the readout Code (connection is via SPI)
+python3 example_get_uid.py
+
+
+# ------------------ Prepare local files ---------------------------------
+scp -r .\*.py pi@raspberrypi.local:SW
+cp -a Pn532-nfc-hat-code/Pn532-nfc-hat-code/raspberrypi/python/pn532 SW/
+
+python -mvenv env --system-site-packages
+
+source env/bin/activate
+pip install rpi_ws281x
+
+# Run sample script
+sudo ./env/bin/python SW/start.py
+
+# Run with GUI
+DISPLAY=:0 sudo ./env/bin/python SW/start.py
+
+# ------------------- Autostart ----------------------------------
+# This code somehow does not work.
+sudo nano ~/.config/wayfire.ini
+
+[autostart]
+1 = touch $HOME/Desktop/test
+
+
+
+#------------------------------ shutdown ----------------------
+# This works
+sudo nano /etc/systemd/system/test.service
+
+[Unit]
+Description=Shutdown pi nicely
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/usr/local/bin/manage_ups
+
+[Install]
+WantedBy=multi-user.target
+
+sudo nano /usr/local/bin/manage_ups
+
+#!/bin/bash
+i2cset -y 1 0x2d 0x01 0x55
+exec python ~/buzzer.py
+
+
+sudo systemctl enable test.service
+sudo chmod 755 /usr/local/bin/manage_ups
