@@ -57,18 +57,9 @@ sudo ./env/bin/python SW/start.py
 # Run with GUI
 DISPLAY=:0 sudo ./env/bin/python SW/start.py
 
-# ------------------- Autostart ----------------------------------
-# This code somehow does not work.
-sudo nano ~/.config/wayfire.ini
-
-[autostart]
-1 = touch $HOME/Desktop/test
-
-
-
 #------------------------------ shutdown ----------------------
 # This works
-sudo nano /etc/systemd/system/test.service
+sudo nano /etc/systemd/system/manage_ups.service
 
 [Unit]
 Description=Shutdown pi nicely
@@ -82,6 +73,7 @@ ExecStop=/usr/local/bin/manage_ups
 [Install]
 WantedBy=multi-user.target
 
+
 sudo nano /usr/local/bin/manage_ups
 
 #!/bin/bash
@@ -89,5 +81,31 @@ i2cset -y 1 0x2d 0x01 0x55
 exec python ~/buzzer.py
 
 
-sudo systemctl enable test.service
+sudo systemctl enable manage_ups.service
 sudo chmod 755 /usr/local/bin/manage_ups
+
+
+# ------------------- Autostart Battery Monitor ----------------------
+sudo nano /etc/xdg/autostart/Batterymonitor.desktop
+[Desktop Entry]
+Name=battery
+Comment=My battery
+Exec=/home/pi/UPS_HAT_E/battery.sh
+Icon=/home/pi/UPS_HAT_E/images/battery.1.png
+Terminal=false
+Type=Application
+Categories=Application;Development;
+StartupNotify=true
+
+nano ~/UPS_HAT_E/battery.sh
+change first line to 10
+
+# ------------------- Autostart Code ----------------------
+sudo nano /etc/xdg/autostart/Reader.desktop
+[Desktop Entry]
+Name=Start reader
+Comment=This autostart starts the reader script
+Exec=lxterminal -e "cd /home/pi/; sleep 10s; sudo ./env/bin/python SW/start.py;"
+Type=Application
+Terminal=true
+TerminalOptions=\s--noclose
