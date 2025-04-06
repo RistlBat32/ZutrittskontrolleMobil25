@@ -1,0 +1,13 @@
+.status-checked-in {
+    background-color: #d4edda !important;
+    color: #155724;
+}
+
+.status-checked-out {
+    background-color: #f8d7da !important;
+    color: #721c24;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+}

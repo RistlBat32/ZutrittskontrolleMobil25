@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import checkin_checkout, all_users, manual_checkout, add_ada, add_nfc_chip, delete_ada, get_ada_list, register_nfc_card
+from .views import checkin_checkout, all_users, manual_checkout, add_ada, add_nfc_chip, delete_ada, get_ada_list, register_nfc_card, battery_status
 
 urlpatterns = [
     path("checkin/", checkin_checkout),
@@ -10,4 +10,5 @@ urlpatterns = [
     path("delete_ada/<int:ada_id>/", delete_ada, name="delete_ada"),
     path("get_ada_list/", get_ada_list, name="get_ada_list"),
     path("register_nfc_card/", register_nfc_card, name="register_nfc_card"),
+    path("battery/", battery_status, name="battery_status"),
 ]

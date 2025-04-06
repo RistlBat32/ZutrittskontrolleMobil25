@@ -1,0 +1,16 @@
+[Unit]
+Description=NFC Checkin Service
+After=network.target
+
+[Service]
+ExecStart=/home/pi/env/bin/python /home/pi/ZutrittskontrolleMobil25/core/nfc_service.py
+WorkingDirectory=/home/pi/ZutrittskontrolleMobil25
+Restart=always
+RestartSec=5
+StartLimitBurst=3
+StartLimitIntervalSec=60
+User=root
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

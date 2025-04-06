@@ -7,33 +7,44 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/keyboard.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="bg-light">
 
     <!-- Navbar -->
-    <header class="p-3 text-bg-dark">
-        <div class="container">
-            <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start" data-bs-theme="dark">
-                <a class="navbar-brand" href="{% url 'dashboard' %}">
-                    <img src="{% static 'img/logo.png' %}" alt="Logo" height="32" class="d-inline-block align-text-top">
+    <nav class="navbar navbar-expand bg-dark" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <img src="{% static 'img/logo.png' %}" alt="Logo" height="30" class="d-inline-block align-text-top">
+            </a>
 
-                </a>
-    
-                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="#" class="nav-link px-2 text-white">Zutrittskontrolle Mobil 25</a></li>
-                </ul>
-    
-                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-                    <input id="globalSearch" type="search" class="form-control form-control-dark text-bg-dark" placeholder="Suche..." aria-label="Search">
-                </form>
-    
-                <div class="text-end">
-                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addAdaModal">Neue AdA</button>
-                </div>
-            </div>
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">Zutrittskontrolle Mobil 25</a>
+                </li>
+            </ul>
+
+            <span id="batteryStatus" class="text-white me-3 d-flex align-items-center">
+                <i id="batteryIcon" class="bi h3 mb-0 bi-battery-full"></i>
+                <span id="batteryPercent">--%</span>
+                <i id="cpuTempIcon" class="bi h3 mb-0 bi-thermometer-high"></i>
+                <span id="cpuTemp">--%</span>
+                <!--<i id="cpuIcon" class="bi h3 mb-0 bi-cpu"></i>-->
+                <!--<span id="cpuPercent">--%</span>-->
+            </span>
+
+            <form class="d-flex me-3" role="search">
+                <input id="globalSearch" type="search" class="form-control form-control-dark text-bg-dark" placeholder="Suche..." aria-label="Search">
+            </form>
+
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addAdaModal">Neue AdA</button>
+            <button class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#shutdownModal">
+                <i class="bi bi-power"></i>
+            </button>
         </div>
-    </header>
+    </nav>
 
     <!-- Infobox für Check-in/Check-out Nachrichten -->
     <div id="statusAlert" class="alert d-none position-fixed top-50 start-50 translate-middle text-center fw-bold p-4" 
@@ -196,8 +207,29 @@
         </div>
     </div>
 
+    <div class="modal fade" id="shutdownModal" tabindex="-1" aria-labelledby="shutdownModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="shutdownModalLabel">Herunterfahren bestätigen</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    Möchtest du das System wirklich jetzt herunterfahren?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Nein</button>
+                    <button type="button" class="btn btn-danger" id="shutdownConfirmBtn">Ja, herunterfahren</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'js/jquery.keyboard.min.js' %}"></script>
+    <script src="{% static 'js/ms-Swiss-German.min.js' %}"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -326,6 +358,7 @@
 
         function showStatusMessage(type, message, nfc_id = null) {
             let statusBox = $("#statusAlert");
+            var time = 3000
             statusBox.removeClass("d-none alert-success alert-danger alert-primary alert-warning");
 
             // Falls NFC-ID vorhanden ist, mache die Meldung klickbar
@@ -334,6 +367,8 @@
                     .addClass("alert-warning") // Gelbe Farbe für Registrierung
                     .html(`${message} <br><small><a href="#" class="btn btn-primary" id="registerNfcLink">Jetzt registrieren</a></small>`)
                     .fadeIn();
+
+                time = 10000;
 
                 // Event-Listener für den Klick auf "Jetzt registrieren"
                 $("#registerNfcLink").off("click").on("click", function (event) {
@@ -355,7 +390,7 @@
 
             setTimeout(function () {
                 statusBox.fadeOut();
-            }, 4000);
+            }, time);
         }
 
         function showRegistrationModal(nfc_id) {
@@ -420,6 +455,140 @@
                 });
             });
         });
+    </script>
+    <script>
+        $(function(){
+            $("input[type='text'], input[type='search'], input[type='password'], textarea").keyboard({
+                layout: 'ms-Swiss German',
+                usePreview: true,
+                autoAccept: true,
+                theme: 'jq-ui-bootstrap',
+                language: "de",
+                
+                position: {
+                    of: window,
+                    my: 'center bottom',
+                    at: 'center bottom',
+                    collision: 'fit',
+                    using: function(pos, feedback){
+                        $(this).css({
+                            top: 'auto',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            bottom: 0,
+                            position: 'fixed'
+                        });
+                    }
+                },
+
+                css: {
+                    // input & preview
+                    input: 'form-control',
+                    // keyboard container
+                    container: 'center-block dropdown-menu', // jumbotron
+                    // default state
+                    buttonDefault: 'btn btn-lg btn-light fs-3',
+                    // hovered button
+                    buttonHover: '',
+                    // Action keys (e.g. Accept, Cancel, Tab, etc);
+                    // this replaces "actionClass" option
+                    buttonAction: 'active',
+                    // used when disabling the decimal button {dec}
+                    // when a decimal exists in the input area
+                    buttonDisabled: 'disabled'
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const shutdownButton = document.getElementById("shutdownConfirmBtn");
+        
+            shutdownButton.addEventListener("click", function () {
+                // Send POST request to shutdown URL
+                fetch("{% url 'shutdown' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}", // include CSRF token
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Optional: display feedback before shutdown
+                        alert("Das System wird jetzt heruntergefahren...");
+                    } else {
+                        alert("Herunterfahren fehlgeschlagen.");
+                    }
+                })
+                .catch(error => {
+                    alert("Fehler beim Abschicken der Anfrage: " + error);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        function updateBatteryStatus() {
+            fetch("/api/battery/")
+                .then(res => res.json())
+                .then(data => {
+                    const percent = data.battery_percent;
+                    const voltage = (data.battery_voltage / 1000).toFixed(2);
+                    const state = data.charging_state;
+        
+        			const cpuTemp = data.cpu_temp_celsius;
+        			const cpuLoad = data.cpu_percent;
+        
+                    const iconEl = document.getElementById("batteryIcon");
+                    const textEl = document.getElementById("batteryPercent");
+                    const tempIconEl = document.getElementById("cpuTempIcon");
+                    const cpuTempEl = document.getElementById("cpuTemp");
+                    //const cpuLoadEl = document.getElementById("cpuPercent");
+                    
+        
+                    let iconClass = "bi mb-0 h3";
+                    let fillLevel = Math.min(100, Math.max(0, percent)); // Clamp
+                    let color = "text-secondary";
+                    
+                    if (cpuTemp < 60) iconClass += " bi-thermometer-low";
+                    else if (cpuTemp < 80) iconClass += " bi-thermometer-half";
+                    else iconClass += " bi-thermometer-high";
+                    
+                    tempIconEl.className = iconClass + " me-1 " + color;                    
+        
+                    iconClass = "bi mb-0 h3";
+                    // Symbol je nach Prozent
+                    if (fillLevel > 75) iconClass += " bi-battery-full";
+                    else if (fillLevel > 50) iconClass += " bi-battery-half";
+                    else if (fillLevel > 10) iconClass += " bi-battery";
+                    else iconClass += " bi-battery";
+        
+                    // Ladezustand: Blitz statt Batterie
+                    if (state === "charging" || state === "fast_charging") {
+                        iconClass = "bi bi-battery-chargin";
+                        color = "text-success";
+                    }
+        
+                    iconEl.className = iconClass + " me-1 " + color;
+                    textEl.textContent = `${percent}%`;
+                    textEl.title = `${voltage} V (${state})`;
+                    
+                    cpuTempEl.textContent = `${cpuTemp}°C`;
+                    //cpuLoadEl.textContent = `${cpuLoad}%`;
+                    
+                })
+                .catch(() => {
+                    const iconEl = document.getElementById("batteryIcon");
+                    const textEl = document.getElementById("batteryPercent");
+        
+                    iconEl.className = "bi bi-exclamation-circle text-muted me-1";
+                    textEl.textContent = "—";
+                });
+        }
+        
+        setInterval(updateBatteryStatus, 15000);
+        updateBatteryStatus();
     </script>
 
     {% block extra_js %}{% endblock %}

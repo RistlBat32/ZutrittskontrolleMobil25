@@ -12,8 +12,7 @@ def init():
     
     GPIO.setup(BUZZER_PIN, GPIO.OUT)
 
-def beep():
-
+def beep(duration=0.2):
     GPIO.output(BUZZER_PIN, True)
-    time.sleep(0.2)
+    time.sleep(duration)
     GPIO.output(BUZZER_PIN, False)

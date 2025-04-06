@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import shutdown_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # all API-Requests
     path('web/', include('frontend.urls')),  # Web
+    path('shutdown/', shutdown_view, name='shutdown'),
 ]
