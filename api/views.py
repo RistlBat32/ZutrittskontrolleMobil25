@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from core.models import AdA, NFCChip
@@ -9,6 +9,8 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 import json
+import smbus
+import psutil
 
 @csrf_exempt
 def checkin_checkout(request):
@@ -25,13 +27,13 @@ def checkin_checkout(request):
                 # NFC-Karte existiert, aber ist keinem AdA zugewiesen
                 message = f"NFC-Karte {nfc_id} ist nicht zugewiesen. Jetzt registrieren?"
                 send_websocket_message("warning", message, nfc_id)
-                return JsonResponse({"error": message, "message_type": "warning", "nfc_id": nfc_id}, status=400)
+                return JsonResponse({"error": message, "message_type": "warning", "nfc_id": nfc_id}, status=200)
 
         except NFCChip.DoesNotExist:
             # NFC-Karte existiert nicht -> Registrierung ermöglichen
             message = f"NFC-Karte {nfc_id} nicht registriert."
             send_websocket_message("danger", message, nfc_id)
-            return JsonResponse({"error": message, "message_type": "danger", "nfc_id": nfc_id}, status=400)
+            return JsonResponse({"error": message, "message_type": "warning", "nfc_id": nfc_id}, status=200)
 
         # Toggle Check-in / Check-out
         if ada.is_checked_in:
@@ -169,3 +171,57 @@ def get_ada_list(request):
     """API liefert eine Liste aller AdAs ohne NFC-Karte"""
     adas_without_nfc = AdA.objects.filter(nfc_chip__isnull=True).values("id", "rank", "last_name", "first_name")
     return JsonResponse({"adas": list(adas_without_nfc)}, safe=False)
+
+def battery_status(request):
+    try:
+        bus = smbus.SMBus(1)
+        ADDR = 0x2d
+
+        # Ladezustand auslesen
+        data = bus.read_i2c_block_data(ADDR, 0x02, 1)
+        state_byte = data[0]
+        if state_byte & 0x40:
+            charging_state = "fast_charging"
+        elif state_byte & 0x80:
+            charging_state = "charging"
+        elif state_byte & 0x20:
+            charging_state = "discharging"
+        else:
+            charging_state = "idle"
+
+        # VBUS: Spannung, Strom, Leistung
+        data = bus.read_i2c_block_data(ADDR, 0x10, 6)
+        voltage_mV = data[0] | (data[1] << 8)
+        current_mA = data[2] | (data[3] << 8)
+        power_mW = data[4] | (data[5] << 8)
+
+        # Batterie: Spannung, Strom, % usw.
+        data = bus.read_i2c_block_data(ADDR, 0x20, 6)
+        battery_voltage = data[0] | (data[1] << 8)
+        battery_current = data[2] | (data[3] << 8)
+        if battery_current > 0x7FFF:
+            battery_current -= 0x10000
+        battery_percent = data[4] | (data[5] << 8)
+        
+        # CPU Temperature        
+        f = open("/sys/class/thermal/thermal_zone0/temp", "r")
+        cpu_temp = round(int(f.readline ())/1000.0,0)
+        
+        # CPU Percentage
+        cpu_percent = psutil.cpu_percent()
+        
+
+        return JsonResponse({
+            "charging_state": charging_state,
+            "voltage_mV": voltage_mV,
+            "current_mA": current_mA,
+            "power_mW": power_mW,
+            "battery_voltage": battery_voltage,
+            "battery_current": battery_current,
+            "battery_percent": battery_percent,
+            "cpu_temp_celsius": cpu_temp,
+            "cpu_percent": cpu_percent
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

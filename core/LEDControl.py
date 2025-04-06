@@ -21,7 +21,6 @@ class LEDControl:
         self.strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL, LED_STRIP)
         # Intialize the library (must be called once before other functions).
         self.strip.begin()
-
     
             
     # Define functions which animate LEDs in various ways.
@@ -33,11 +32,29 @@ class LEDControl:
             time.sleep(wait_ms / 1000.0)
     
     def blinkGreen(self):
+        buzzer.beep()
         for i in range(self.strip.numPixels()//2):
             self.strip.setPixelColor(i, Color(255, 0, 0))
             self.strip.setPixelColor(16-i, Color(255, 0, 0))
             self.strip.show()
             time.sleep(0.05)
+        buzzer.beep()
+
+    def blinkYellow(self):
+        for i in range(self.strip.numPixels() // 2):
+            self.strip.setPixelColor(i, Color(255, 255, 0))
+            self.strip.setPixelColor(16 - i, Color(255, 255, 0))
+            self.strip.show()
+            time.sleep(0.02)
+
+        for i in range(2):
+            self.turnOff()
+            time.sleep(0.2)
+            for i in range(self.strip.numPixels() // 2):
+                self.strip.setPixelColor(i, Color(255, 255, 0))
+                self.strip.setPixelColor(16 - i, Color(255, 255, 0))
+            self.strip.show()
+            buzzer.beep(0.5)
         
     def blinkRed(self):
         for i in range(self.strip.numPixels()//2):
@@ -47,13 +64,31 @@ class LEDControl:
             time.sleep(0.02)
         for i in range(5):
             self.turnOff()
-            time.sleep(0.2)
+            time.sleep(0.1)
             for i in range(self.strip.numPixels()//2):
                 self.strip.setPixelColor(i, Color(0, 255, 0))
                 self.strip.setPixelColor(16-i, Color(0, 255, 0))
             self.strip.show()
-            buzzer.beep()
-            
+            buzzer.beep(0.1)
+    
+    def blinkWhite(self):
+        # Initial blink
+        buzzer.beep()
+        for i in range(self.strip.numPixels() // 2):
+            self.strip.setPixelColor(i, Color(255, 255, 255))  # Weiß
+            self.strip.setPixelColor(16 - i, Color(255, 255, 255))
+            self.strip.show()
+            time.sleep(0.02)
+
+    def blinkBlue(self):
+        # Initial blink
+        buzzer.beep(0.5)
+        for i in range(self.strip.numPixels() // 2):
+            self.strip.setPixelColor(i, Color(0, 0, 255))  # Blau
+            self.strip.setPixelColor(16 - i, Color(0, 0, 255))
+            self.strip.show()
+            time.sleep(0.02)
+
         
         
     def turnOff(self):

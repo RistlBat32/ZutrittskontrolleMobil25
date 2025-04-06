@@ -1,0 +1,16 @@
+[Unit]
+Description=Django Daphne Server
+After=network.target
+
+[Service]
+ExecStart=/home/pi/env/bin/daphne -b 0.0.0.0 -p 8000 ZutrittskontrolleMobil25.asgi:application
+WorkingDirectory=/home/pi/ZutrittskontrolleMobil25
+Restart=always
+RestartSec=5
+StartLimitBurst=3
+StartLimitIntervalSec=60
+User=pi
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

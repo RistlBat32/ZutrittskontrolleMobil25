@@ -1,2 +1,11 @@
-channels
-daphne
+# Django Framework
+django>=4.2
+
+# WebSockets & Echtzeit-Kommunikation
+channels>=4.0
+daphne>=4.0  # ASGI HTTP/WebSocket Server
+
+# Datenbank (MariaDB/MySQL)
+mysqlclient>=2.2  # C-Extension für MariaDB/MySQL
+
+whitenoise
