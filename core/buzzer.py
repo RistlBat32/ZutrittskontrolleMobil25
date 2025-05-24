@@ -2,7 +2,7 @@
 import RPi.GPIO as GPIO
 import time
 
-BUZZER_PIN=23
+BUZZER_PIN=13
 
 
 def init():

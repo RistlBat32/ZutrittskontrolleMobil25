@@ -107,3 +107,9 @@ dev=$1
 
 /sbin/hwclock --rtc=$dev --hctosys
 --
+
+
+# -------------------------- Chromium ------------------------
+
+# delete profile lock
+rm -rf ~/.config/chromium/Singleton*

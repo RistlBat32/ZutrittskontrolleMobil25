@@ -17,10 +17,10 @@ if __name__ == '__main__':
     GPIO.setup(INTERRUPT_PIN, GPIO.IN) #pull_up_down=GPIO.PUD_UP
 
     try:
-        pn532 = PN532_SPI(debug=False, reset=20, cs=4)
+        pn532 = PN532_SPI(debug=False, reset=22, cs=4)
         ic, ver, rev, support = pn532.get_firmware_version()
         pn532.SAM_configuration()
-
+    
         while True:
             
             #This would be the three lines to enable interrrupts, However, this creates a higher CPU load. 
