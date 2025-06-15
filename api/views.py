@@ -4,13 +4,23 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from core.models import AdA, NFCChip
 from django.utils.timezone import localtime
+from django.core.files.storage import default_storage
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
 import json
-import smbus
-import psutil
+import openpyxl
+
+try:
+    import smbus
+except ImportError:
+    smbus = None
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
 
 @csrf_exempt
 def checkin_checkout(request):
@@ -225,3 +235,45 @@ def battery_status(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def import_excel(request):
+    if request.method == "POST":
+        try:
+            uploaded_file = request.FILES.get("file")
+            if not uploaded_file:
+                return JsonResponse({"error": "Keine Datei hochgeladen."}, status=400)
+
+            # Datei temporär speichern
+            file_path = default_storage.save(f"tmp/{uploaded_file.name}", uploaded_file)
+
+            # Excel-Datei laden
+            wb = openpyxl.load_workbook(default_storage.path(file_path))
+            sheet = wb.active
+
+            imported = 0
+            header = [cell.value for cell in next(sheet.iter_rows(min_row=1, max_row=1))]
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                row_data = dict(zip(header, row))
+                grad = row_data.get("Grad Kurzform")
+                name = row_data.get("Name / Vorname")
+                if grad and name:
+                    last_name = name.split(",")[0] if "," in name else name
+                    first_name = name.split(",")[1].strip() if "," in name else ""
+                    # Überprüfen, ob AdA bereits existiert
+                    if AdA.objects.filter(rank=grad.strip(), last_name=last_name.strip()).exists():
+                        continue
+
+                    AdA.objects.create(rank=grad.strip(), last_name=last_name.strip(), first_name=first_name.strip())
+                    imported += 1
+            # Temporäre Datei löschen
+            default_storage.delete(file_path)
+            if imported == 0:
+                return JsonResponse({"message": "Keine neuen AdA importiert."}) 
+            return JsonResponse({"message": f"{imported} AdA(s) erfolgreich importiert."})
+
+        except Exception as e:
+            # Fehlerbehandlung
+            if 'file_path' in locals():
+                default_storage.delete(file_path)
+            return JsonResponse({"error": str(e)}, status=500)

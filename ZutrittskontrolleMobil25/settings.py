@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#2*5=u7^vv@zv6zki9^x!26*q=a%+2#7k3&ww%txu^s1l@=w%g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -88,16 +88,27 @@ WSGI_APPLICATION = 'ZutrittskontrolleMobil25.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'zutrittskontrolle',
-        'USER': 'django',
-        'PASSWORD': 'bebzub-6pufxo-mukriZ',
-        'HOST': 'localhost',
-        'PORT': '3306',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # Production database settings
+    # Ensure you have the MySQL server running and the database created
+    # You may need to install mysqlclient or another MySQL driver for Django
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'zutrittskontrolle',
+            'USER': 'django',
+            'PASSWORD': 'bebzub-6pufxo-mukriZ',
+            'HOST': 'localhost',
+            'PORT': '3306',
+        }
+    }
 
 
 # Password validation
