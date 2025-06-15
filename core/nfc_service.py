@@ -20,18 +20,17 @@ if __name__ == '__main__':
         pn532 = PN532_SPI(debug=False, reset=22, cs=4)
         ic, ver, rev, support = pn532.get_firmware_version()
         pn532.SAM_configuration()
-    
+
         while True:
             
-            #This would be the three lines to enable interrrupts, However, this creates a higher CPU load. 
-            pn532.start_auto_poll()
-            if(GPIO.input(INTERRUPT_PIN)):
-                GPIO.wait_for_edge(INTERRUPT_PIN, GPIO.FALLING)
-            uid = pn532.read_autopoll_answer()
+            #print(pn532.start_auto_poll())
+            #if(GPIO.input(INTERRUPT_PIN)):
+            #    GPIO.wait_for_edge(INTERRUPT_PIN, GPIO.FALLING)
+            #uid = pn532.read_autopoll_answer()
          
 
-            #uid = pn532.read_passive_target(timeout=0.5)
-            #print('.', end="", flush=True)
+            uid = pn532.read_passive_target(timeout=0.5)
+            print('.', end="", flush=True)
             if uid is None:
                 continue
 
