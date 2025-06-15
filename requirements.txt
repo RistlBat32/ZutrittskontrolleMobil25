@@ -9,3 +9,6 @@ daphne>=4.0  # ASGI HTTP/WebSocket Server
 mysqlclient>=2.2  # C-Extension für MariaDB/MySQL
 
 whitenoise
+
+#import excel
+openpyxl
