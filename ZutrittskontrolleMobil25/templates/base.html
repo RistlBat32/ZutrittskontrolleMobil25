@@ -22,7 +22,7 @@
 
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="#">Zutrittskontrolle Mobil 25</a>
+                    <a class="nav-link text-white" href="#">ZuKo Mob 25</a>
                 </li>
             </ul>
 
@@ -39,7 +39,15 @@
                 <input id="globalSearch" type="search" class="form-control form-control-dark text-bg-dark" placeholder="Suche..." aria-label="Search">
             </form>
 
-            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addAdaModal">Neue AdA</button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Neue AdA
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addAdaModal">Manuell erfassen</a></li>
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importExcelModal">Aus Datei importieren</a></li>
+                </ul>
+            </div>
             <button class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#shutdownModal">
                 <i class="bi bi-power"></i>
             </button>
@@ -109,6 +117,27 @@
                             <input type="text" class="form-control" id="adaFirstName" required>
                         </div>
                         <button type="submit" class="btn btn-success">Speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal zum Importieren von AdA per Excel -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importExcelModalLabel">AdA-Liste importieren</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="importExcelForm">
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label">Excel-Datei auswählen</label>
+                            <input type="file" class="form-control" id="excelFile" accept=".xlsx, .xls" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Hochladen</button>
                     </form>
                 </div>
             </div>
@@ -225,7 +254,7 @@
         </div>
     </div>
 
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/datatables.min.js' %}"></script>
     <script src="{% static 'js/jquery-ui.min.js' %}"></script>
     <script src="{% static 'js/jquery.keyboard.min.js' %}"></script>
@@ -526,6 +555,37 @@
                 });
             });
         });
+    </script>
+
+    <script>
+    $(document).ready(function () {
+        $("#importExcelForm").submit(function (event) {
+            event.preventDefault();
+            let fileInput = document.getElementById("excelFile");
+            if (fileInput.files.length === 0) {
+                alert("Bitte eine Datei auswählen.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            fetch("/api/import_excel/", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Import abgeschlossen.");
+                $('#importExcelModal').modal('hide');
+                $('#usersTable').DataTable().ajax.reload();
+            })
+            .catch(error => {
+                console.error("Fehler beim Hochladen:", error);
+                alert("Fehler beim Hochladen.");
+            });
+        });
+    });
     </script>
 
     <script>
