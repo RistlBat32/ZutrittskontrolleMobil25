@@ -29,7 +29,7 @@ if __name__ == '__main__':
             #uid = pn532.read_autopoll_answer()
          
 
-            uid = pn532.read_passive_target(timeout=0.5)
+            uid = pn532.read_passive_target(timeout=0.2)
             print('.', end="", flush=True)
             if uid is None:
                 continue
