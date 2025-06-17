@@ -10,7 +10,7 @@ unclutter -idle 0.1 -root &
 #  --start-maximized --use-gl=egl
 
 echo 'Starting Chromium...'
-/usr/bin/chromium-browser https://developbyter.com \
+/usr/bin/chromium-browser http://localhost:8000/web \
   --window-position=0,0 \
   --start-fullscreen \
   --kiosk \
@@ -27,5 +27,4 @@ echo 'Starting Chromium...'
   --disable-pinch \
   --hide-scrollbars \
   --disable-gpu \
-  --disable-software-rasterizer \
-  --app=http://localhost:8000/web/
+  --disable-software-rasterizer
