@@ -35,7 +35,7 @@ class LEDControl:
         buzzer.beep()
         for i in range(self.strip.numPixels()//2):
             self.strip.setPixelColor(i, Color(255, 0, 0))
-            self.strip.setPixelColor(16-i, Color(255, 0, 0))
+            self.strip.setPixelColor(15-i, Color(255, 0, 0))
             self.strip.show()
             time.sleep(0.05)
         buzzer.beep()
@@ -43,7 +43,7 @@ class LEDControl:
     def blinkYellow(self):
         for i in range(self.strip.numPixels() // 2):
             self.strip.setPixelColor(i, Color(255, 255, 0))
-            self.strip.setPixelColor(16 - i, Color(255, 255, 0))
+            self.strip.setPixelColor(15 - i, Color(255, 255, 0))
             self.strip.show()
             time.sleep(0.02)
 
@@ -52,14 +52,14 @@ class LEDControl:
             time.sleep(0.2)
             for i in range(self.strip.numPixels() // 2):
                 self.strip.setPixelColor(i, Color(255, 255, 0))
-                self.strip.setPixelColor(16 - i, Color(255, 255, 0))
+                self.strip.setPixelColor(15 - i, Color(255, 255, 0))
             self.strip.show()
             buzzer.beep(0.5)
         
     def blinkRed(self):
         for i in range(self.strip.numPixels()//2):
             self.strip.setPixelColor(i, Color(0, 255, 0))
-            self.strip.setPixelColor(16-i, Color(0, 255, 0))
+            self.strip.setPixelColor(15-i, Color(0, 255, 0))
             self.strip.show()
             time.sleep(0.02)
         for i in range(5):
@@ -67,7 +67,7 @@ class LEDControl:
             time.sleep(0.1)
             for i in range(self.strip.numPixels()//2):
                 self.strip.setPixelColor(i, Color(0, 255, 0))
-                self.strip.setPixelColor(16-i, Color(0, 255, 0))
+                self.strip.setPixelColor(15-i, Color(0, 255, 0))
             self.strip.show()
             buzzer.beep(0.1)
     
@@ -76,7 +76,7 @@ class LEDControl:
         buzzer.beep()
         for i in range(self.strip.numPixels() // 2):
             self.strip.setPixelColor(i, Color(255, 255, 255))  # Weiß
-            self.strip.setPixelColor(16 - i, Color(255, 255, 255))
+            self.strip.setPixelColor(15 - i, Color(255, 255, 255))
             self.strip.show()
             time.sleep(0.02)
 
@@ -85,7 +85,7 @@ class LEDControl:
         buzzer.beep(0.5)
         for i in range(self.strip.numPixels() // 2):
             self.strip.setPixelColor(i, Color(0, 0, 255))  # Blau
-            self.strip.setPixelColor(16 - i, Color(0, 0, 255))
+            self.strip.setPixelColor(15 - i, Color(0, 0, 255))
             self.strip.show()
             time.sleep(0.02)
 
